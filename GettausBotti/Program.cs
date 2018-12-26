@@ -50,6 +50,11 @@ namespace GettausBotti
                             {
                                 await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "nice", replyToMessageId: e.Message.MessageId);
                             }
+                            else
+                            {
+                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "shit get", replyToMessageId: e.Message.MessageId);
+                            }
+
                             break;
                     }     
                 }
