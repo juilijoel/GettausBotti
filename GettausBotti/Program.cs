@@ -2,8 +2,10 @@
 using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
+using Telegram.Bot.Types;
 
 namespace GettausBotti
 {
@@ -39,15 +41,34 @@ namespace GettausBotti
                 {
                     Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}.");
 
-                    await botClient.SendTextMessageAsync(
-                      chatId: e.Message.Chat,
-                      text: "You said:\n" + e.Message.Text
-                    );
+                    //Here we handle the user input
+                    switch (e.Message.Text)
+                    {
+                        //User tried to GET
+                        case "/get":
+                            if (TryGet(e.Message))
+                            {
+                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "nice", replyToMessageId: e.Message.MessageId);
+                            }
+                            break;
+                    }     
                 }
             }
             catch(Exception ex){
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        private static bool TryGet(Message message)
+        {
+            var messageLocalTime = message.Date.ToLocalTime();
+
+            if(messageLocalTime.Hour == 16 && messageLocalTime.Minute == 20)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
