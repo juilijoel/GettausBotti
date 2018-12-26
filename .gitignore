@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/GettausBotti/bin/Debug/netcoreapp2.1/appsettings.json
+/GettausBotti/bin/Debug/netcoreapp2.1
+/GettausBotti/obj
+/.vs/GettausBotti/v15
