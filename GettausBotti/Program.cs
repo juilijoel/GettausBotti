@@ -63,12 +63,7 @@ namespace GettausBotti
         {
             var messageLocalTime = message.Date.ToLocalTime();
 
-            if(messageLocalTime.Hour == 16 && messageLocalTime.Minute == 20)
-            {
-                return true;
-            }
-
-            return false;
+            return (messageLocalTime.Hour == 16 && messageLocalTime.Minute == 20);
         }
     }
 }
