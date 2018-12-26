@@ -7,3 +7,6 @@
 /GettausBotti/obj
 /.vs/GettausBotti/v15
 /GettausBotti/appsettings.json
+/GettausBotti/bin/Release/netcoreapp2.1
+/GettausBotti/Properties/PublishProfiles
+/GettausBotti/GettausBotti.csproj.user
