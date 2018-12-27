@@ -68,7 +68,9 @@ namespace GettausBotti.Models
                         UserId = ga.Key.UserId,
                         UserName = ga.Where(gag => gag.UserName != null).Select(gag => gag.UserName).FirstOrDefault(),
                         Score = ga.Count(gag => gag.IsGet)
-                    }).ToListAsync();
+                    })
+                    .OrderByDescending(gs => gs.Score)
+                    .ToListAsync();
             }
         }
     }
