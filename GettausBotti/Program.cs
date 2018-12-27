@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -12,16 +15,23 @@ namespace GettausBotti
     class Program
     {
         static ITelegramBotClient botClient;
+        static List<GetTime> getTimes;
 
-        static void Main(string[] args)
+        static public void Main(string[] args)
         {
             //Set config file
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
-            var configuration = builder.Build();
+            var config = builder.Build();
 
+            //Set getting times
+            getTimes = config.GetSection("getTimes").GetChildren().Select(gt => new GetTime
+            {
+                Hour = int.Parse(gt.Value.Split(":")[0]),
+                Minute = int.Parse(gt.Value.Split(":")[1]),
+            }).ToList();
 
             //Init bot client
-            botClient = new TelegramBotClient(configuration["accessToken"]);
+            botClient = new TelegramBotClient(config["accessToken"]);
             var me = botClient.GetMeAsync().Result;
 
             Console.WriteLine(
@@ -65,11 +75,18 @@ namespace GettausBotti
             }
         }
 
-        private static bool TryGet(Message message)
+        static bool TryGet(Message message)
         {
             var messageLocalTime = message.Date.ToLocalTime();
 
-            return (messageLocalTime.Hour == 16 && messageLocalTime.Minute == 20);
+            return getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute);
         }
+    }
+
+    public class GetTime
+    {
+        public int Hour { get; set; }
+        public int Minute { get; set; }
+
     }
 }
