@@ -50,7 +50,7 @@ namespace GettausBotti
             {
                 if (e.Message.Text != null)
                 {
-                    Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}.");
+                    Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
 
                     //Here we handle the user input
                     switch (e.Message.Text)
@@ -77,7 +77,7 @@ namespace GettausBotti
 
         static bool TryGet(Message message)
         {
-            var messageLocalTime = message.Date.ToLocalTime();
+            var messageLocalTime = message.Date.ToUniversalTime();
 
             return getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute);
         }
@@ -87,6 +87,5 @@ namespace GettausBotti
     {
         public int Hour { get; set; }
         public int Minute { get; set; }
-
     }
 }
