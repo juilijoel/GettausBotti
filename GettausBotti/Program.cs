@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using GettausBotti.Models;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace GettausBotti
     {
         static ITelegramBotClient botClient;
         static List<GetTime> getTimes;
+        static GettingRepository gr;
 
         static public void Main(string[] args)
         {
@@ -33,6 +35,9 @@ namespace GettausBotti
                 Hour = int.Parse(gt.Value.Split(":")[0]),
                 Minute = int.Parse(gt.Value.Split(":")[1]),
             }).ToList();
+
+            //Init database access
+            gr = new GettingRepository();
 
             //Init bot client
             botClient = new TelegramBotClient(config["accessToken"]);
@@ -61,7 +66,7 @@ namespace GettausBotti
                     {
                         //User tried to GET
                         case "/get":
-                            if (TryGet(e.Message))
+                            if (await TryGetAsync(e.Message))
                             {
                                 await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "nice", replyToMessageId: e.Message.MessageId);
                             }
@@ -79,11 +84,17 @@ namespace GettausBotti
             }
         }
 
-        static bool TryGet(Message message)
+        static async Task<bool> TryGetAsync(Message message)
         {
             var messageLocalTime = message.Date.ToUniversalTime();
+            var currentGetTime = getTimes.Where(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute).FirstOrDefault();
 
-            return getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute);
+            if(currentGetTime != null)
+            {
+                return await gr.IsFirstGetOfMinuteAsync(messageLocalTime);
+            }
+
+            return false;
         }
     }
 

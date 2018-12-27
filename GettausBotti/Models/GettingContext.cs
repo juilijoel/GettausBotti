@@ -20,12 +20,4 @@ namespace GettausBotti.Models
             optionsBuilder.UseSqlServer(configuration["connectionString"]);
         }
     }
-
-    public class GetAttempt
-    {
-        public long Id { get; set; }
-        public string UserName { get; set; }
-        public long ChatId { get; set; }
-        public DateTime TimeStamp { get; set; }
-    }
 }
