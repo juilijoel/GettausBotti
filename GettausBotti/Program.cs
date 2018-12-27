@@ -1,4 +1,5 @@
-﻿using GettausBotti.Models;
+﻿using GettausBotti.DataTypes;
+using GettausBotti.Models;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -75,7 +76,21 @@ namespace GettausBotti
                             {
                                 Console.WriteLine($"Failed get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
                             }
+                            break;
 
+                        case "/scores":
+                            {
+                                var scores = await gr.GetScores(e.Message.Chat.Id);
+                                var scoresString = "";
+
+                                foreach(var score in scores)
+                                {
+                                    scoresString += score.ToString();
+                                    scoresString += "\n";
+                                }
+
+                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: scoresString);
+                            }
                             break;
                     }     
                 }
@@ -99,11 +114,5 @@ namespace GettausBotti
             await gr.SaveFailedGet(message);
             return false;
         }
-    }
-
-    public class GetTime
-    {
-        public int Hour { get; set; }
-        public int Minute { get; set; }
     }
 }

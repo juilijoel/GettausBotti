@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GettausBotti.DataTypes;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,6 +53,22 @@ namespace GettausBotti.Models
                 await ctx.SaveChangesAsync();
 
                 return true;
+            }
+        }
+
+        public async Task<List<GetScore>> GetScores(long paChatId)
+        {
+            using (var ctx = new GettingContext())
+            {
+                return await ctx.GetAttempts
+                    .Where(ga => ga.ChatId == paChatId)
+                    .GroupBy(ga => new { ga.ChatId, ga.UserId })
+                    .Select(ga => new GetScore
+                    {
+                        UserId = ga.Key.UserId,
+                        UserName = ga.Where(gag => gag.UserName != null).Select(gag => gag.UserName).FirstOrDefault(),
+                        Score = ga.Count(gag => gag.IsGet)
+                    }).ToListAsync();
             }
         }
     }
