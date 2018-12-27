@@ -19,6 +19,7 @@ namespace GettausBotti
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
             var configuration = builder.Build();
 
+
             //Init bot client
             botClient = new TelegramBotClient(configuration["accessToken"]);
             var me = botClient.GetMeAsync().Result;
