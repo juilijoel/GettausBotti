@@ -20,7 +20,11 @@ namespace GettausBotti
         static public void Main(string[] args)
         {
             //Set config file
+#if DEBUG
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings_debug.json");
+#else
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
+#endif
             var config = builder.Build();
 
             //Set getting times

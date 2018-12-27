@@ -10,3 +10,4 @@
 /GettausBotti/bin/Release/netcoreapp2.1
 /GettausBotti/Properties/PublishProfiles
 /GettausBotti/GettausBotti.csproj.user
+/GettausBotti/appsettings_debug.json
