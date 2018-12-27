@@ -91,7 +91,7 @@ namespace GettausBotti
 
             if(currentGetTime != null)
             {
-                return await gr.IsFirstGetOfMinuteAsync(messageLocalTime);
+                return await gr.SaveIfFirstGetOfMinuteAsync(message);
             }
 
             return false;
