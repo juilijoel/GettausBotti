@@ -62,17 +62,18 @@ namespace GettausBotti
                     Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
 
                     //Here we handle the user input
-                    switch (e.Message.Text)
+                    switch (e.Message.Text.Split(" ")[0])
                     {
                         //User tried to GET
                         case "/get":
                             if (await TryGetAsync(e.Message))
                             {
                                 await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "nice", replyToMessageId: e.Message.MessageId);
+                                Console.WriteLine($"Successful get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat}");
                             }
                             else
                             {
-                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "shit get", replyToMessageId: e.Message.MessageId);
+                                Console.WriteLine($"Failed get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
                             }
 
                             break;
@@ -94,6 +95,7 @@ namespace GettausBotti
                 return await gr.SaveIfFirstGetOfMinuteAsync(message);
             }
 
+            await gr.SaveFailedGet(message);
             return false;
         }
     }
