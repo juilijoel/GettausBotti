@@ -18,7 +18,7 @@ namespace GettausBotti.Models
                 if(!await ctx.GetAttempts.AnyAsync(ga => ga.TimeStamp.Date == paMessage.Date.Date
                      && ga.TimeStamp.Hour == paMessage.Date.Hour
                      && ga.TimeStamp.Minute == paMessage.Date.Minute
-                     && ga.TimeStamp < paMessage.Date))
+                     && ga.TimeStamp <= paMessage.Date))
                 {
                     await ctx.GetAttempts.AddAsync(new GetAttempt()
                     {
