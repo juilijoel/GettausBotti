@@ -88,13 +88,14 @@ namespace GettausBotti
         static async Task<bool> TryGetAsync(Message message)
         {
             var messageLocalTime = message.Date.ToUniversalTime();
-            var currentGetTime = getTimes.Where(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute).FirstOrDefault();
 
-            if(currentGetTime != null)
+            //If get minute is right, we try if it's the first attempt of current minute
+            if(getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute))
             {
                 return await gr.SaveIfFirstGetOfMinuteAsync(message);
             }
 
+            //If get minute is wrong, we save a failed attempt
             await gr.SaveFailedGet(message);
             return false;
         }
