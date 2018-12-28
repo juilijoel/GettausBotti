@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Telegram.Bot.Types;
 
 namespace GettausBotti
 {
@@ -29,6 +30,18 @@ namespace GettausBotti
                 Hour = int.Parse(gt.Value.Split(":")[0]),
                 Minute = int.Parse(gt.Value.Split(":")[1]),
             }).ToList();
+        }
+
+        public static string Reverse(string s)
+        {
+            char[] charArray = s.ToCharArray();
+            Array.Reverse(charArray);
+            return new string(charArray);
+        }
+
+        public static string ReverseMessageText(Message message)
+        {
+            return Reverse(message.Text.Substring(message.EntityValues.FirstOrDefault().Length));
         }
     }
 }
