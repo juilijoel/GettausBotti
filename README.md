@@ -2,7 +2,7 @@
 Telegram bot for taking gets
 
 ## Deployment
--Talk to @BotFather to get a HTTP API access token
--Get an MSSQL server and database
--Add your API Token and database connection string to appsettings.json
--Run project GettausBotti in Visual Studio
+1. Talk to @BotFather to get a HTTP API access token
+2. Get an MSSQL server and database
+3. Add your API Token and database connection string to appsettings.json
+4. Run project GettausBotti in Visual Studio
