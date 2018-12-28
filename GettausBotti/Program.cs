@@ -59,7 +59,7 @@ namespace GettausBotti
                     Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
 
                     //Here we handle the user input
-                    switch (e.Message.Text.Split(" ")[0])
+                    switch (e.Message.EntityValues.FirstOrDefault().Split("@")[0])
                     {
                         //User tried to GET
                         case "/get":
