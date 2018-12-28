@@ -58,8 +58,10 @@ namespace GettausBotti
                 {
                     Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
 
+                    var command = e.Message.EntityValues.FirstOrDefault().Split("@")[0];
+
                     //Here we handle the user input
-                    switch (e.Message.EntityValues.FirstOrDefault().Split("@")[0])
+                    switch (command)
                     {
                         //User tried to GET
                         case "/get":
@@ -80,10 +82,17 @@ namespace GettausBotti
                                 await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: Helper.ScoresToMessageString(scores));
                             }
                             break;
+
+                        case "/reverse":
+                            {
+                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: Helper.ReverseMessageText(e.Message));
+                            }
+                            break;
                     }     
                 }
             }
-            catch(Exception ex){
+            catch(Exception ex)
+            {
                 Console.WriteLine(ex.Message);
             }
         }
