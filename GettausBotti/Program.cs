@@ -81,15 +81,7 @@ namespace GettausBotti
                         case "/scores":
                             {
                                 var scores = await gr.GetScores(e.Message.Chat.Id);
-                                var scoresString = "";
-
-                                foreach(var score in scores)
-                                {
-                                    scoresString += score.ToString();
-                                    scoresString += "\n";
-                                }
-
-                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: scoresString);
+                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: ScoresToMessageString(scores));
                             }
                             break;
                     }     
@@ -98,6 +90,19 @@ namespace GettausBotti
             catch(Exception ex){
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        static string ScoresToMessageString(List<GetScore> scores)
+        {
+            var resultString = "";
+
+            foreach (var score in scores)
+            {
+                resultString += score.ToString();
+                resultString += "\n";
+            }
+
+            return resultString;
         }
 
         static async Task<bool> TryGetAsync(Message message)
