@@ -31,11 +31,7 @@ namespace GettausBotti
             var config = builder.Build();
 
             //Set getting times
-            getTimes = config.GetSection("getTimes").GetChildren().Select(gt => new GetTime
-            {
-                Hour = int.Parse(gt.Value.Split(":")[0]),
-                Minute = int.Parse(gt.Value.Split(":")[1]),
-            }).ToList();
+            getTimes = Helper.GetGetTimes(config);
 
             //Init database access
             gr = new GettingRepository();
@@ -77,11 +73,11 @@ namespace GettausBotti
                                 Console.WriteLine($"Failed get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
                             }
                             break;
-
+                        
                         case "/scores":
                             {
                                 var scores = await gr.GetScores(e.Message.Chat.Id);
-                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: ScoresToMessageString(scores));
+                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: Helper.ScoresToMessageString(scores));
                             }
                             break;
                     }     
@@ -90,19 +86,6 @@ namespace GettausBotti
             catch(Exception ex){
                 Console.WriteLine(ex.Message);
             }
-        }
-
-        static string ScoresToMessageString(List<GetScore> scores)
-        {
-            var resultString = "";
-
-            foreach (var score in scores)
-            {
-                resultString += score.ToString();
-                resultString += "\n";
-            }
-
-            return resultString;
         }
 
         static async Task<bool> TryGetAsync(Message message)
