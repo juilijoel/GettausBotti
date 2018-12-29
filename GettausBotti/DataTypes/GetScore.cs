@@ -12,7 +12,7 @@ namespace GettausBotti.DataTypes
 
         public override string ToString()
         {
-            return "@" + UserName + ": " + Score;
+            return UserName ?? "no username" + ": " + Score;
         }
     } 
 }
