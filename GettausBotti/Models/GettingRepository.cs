@@ -15,25 +15,25 @@ namespace GettausBotti.Models
         {
             using (var ctx = new GettingContext())
             {
-                if(!await ctx.GetAttempts.AnyAsync(ga => ga.TimeStamp.Date == paMessage.Date.Date
-                     && ga.TimeStamp.Hour == paMessage.Date.Hour
-                     && ga.TimeStamp.Minute == paMessage.Date.Minute
-                     && ga.TimeStamp <= paMessage.Date))
+                //return false if a previous get exists in the chat
+                if (await ctx.GetAttempts.AnyAsync(ga => ga.ChatId == paMessage.Chat.Id
+                                                         && ga.TimeStamp.Date == paMessage.Date.Date
+                                                         && ga.TimeStamp.Hour == paMessage.Date.Hour
+                                                         && ga.TimeStamp.Minute == paMessage.Date.Minute
+                                                         && ga.TimeStamp <= paMessage.Date)) return false;
+
+                await ctx.GetAttempts.AddAsync(new GetAttempt()
                 {
-                    await ctx.GetAttempts.AddAsync(new GetAttempt()
-                    {
-                        ChatId = paMessage.Chat.Id,
-                        UserId = paMessage.From.Id,
-                        TimeStamp = paMessage.Date,
-                        UserName = paMessage.From.Username,
-                        IsGet = true
-                    });
+                    ChatId = paMessage.Chat.Id,
+                    UserId = paMessage.From.Id,
+                    TimeStamp = paMessage.Date,
+                    UserName = paMessage.From.Username,
+                    IsGet = true
+                });
 
-                    await ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
 
-                    return true;
-                }
-                return false;
+                return true;
             }
         }
 
