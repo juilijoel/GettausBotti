@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Telegram.Bot.Types;
@@ -32,16 +33,22 @@ namespace GettausBotti
             }).ToList();
         }
 
-        public static string Reverse(string s)
-        {
-            char[] charArray = s.ToCharArray();
-            Array.Reverse(charArray);
-            return new string(charArray);
-        }
-
         public static string ReverseMessageText(Message message)
         {
-            return Reverse(message.Text.Substring(message.EntityValues.FirstOrDefault().Length));
+            return ReverseGraphemeClusters(message.Text.Substring(message.EntityValues.FirstOrDefault().Length));
+        }
+
+        private static IEnumerable<string> GraphemeClusters(this string s)
+        {
+            var enumerator = StringInfo.GetTextElementEnumerator(s);
+            while (enumerator.MoveNext())
+            {
+                yield return (string)enumerator.Current;
+            }
+        }
+        private static string ReverseGraphemeClusters(this string s)
+        {
+            return string.Join("", s.GraphemeClusters().Reverse().ToArray());
         }
     }
 }
