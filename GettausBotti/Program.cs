@@ -54,41 +54,41 @@ namespace GettausBotti
         {
             try
             {
-                if (e.Message.Text != null)
+                //Do nothing if no command in message
+                if (e.Message.EntityValues == null) return;
+
+                Console.WriteLine($"Received a command in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
+
+                var command = e.Message.EntityValues.FirstOrDefault().Split("@")[0];
+
+                //Here we handle the user input
+                switch (command)
                 {
-                    Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
-
-                    var command = e.Message.EntityValues.FirstOrDefault().Split("@")[0];
-
-                    //Here we handle the user input
-                    switch (command)
-                    {
-                        //User tried to GET
-                        case "/get":
-                            if (await TryGetAsync(e.Message))
-                            {
-                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "nice", replyToMessageId: e.Message.MessageId);
-                                Console.WriteLine($"Successful get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat}");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"Failed get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
-                            }
-                            break;
+                    //User tried to GET
+                    case "/get":
+                        if (await TryGetAsync(e.Message))
+                        {
+                            await botClient.SendTextMessageAsync(e.Message.Chat, "nice", replyToMessageId: e.Message.MessageId);
+                            Console.WriteLine($"Successful get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Failed get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
+                        }
+                        break;
                         
-                        case "/scores":
-                            {
-                                var scores = await gr.GetScores(e.Message.Chat.Id);
-                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: Helper.ScoresToMessageString(scores));
-                            }
-                            break;
+                    case "/scores":
+                    {
+                        var scores = await gr.GetScores(e.Message.Chat.Id);
+                        await botClient.SendTextMessageAsync(e.Message.Chat, Helper.ScoresToMessageString(scores));
+                    }
+                        break;
 
-                        case "/reverse":
-                            {
-                                await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: Helper.ReverseMessageText(e.Message));
-                            }
-                            break;
-                    }     
+                    case "/reverse":
+                    {
+                        await botClient.SendTextMessageAsync(e.Message.Chat, Helper.ReverseMessageText(e.Message));
+                    }
+                        break;
                 }
             }
             catch(Exception ex)
