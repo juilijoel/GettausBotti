@@ -70,6 +70,7 @@ namespace GettausBotti.Models
                         Score = ga.Count(gag => gag.IsGet)
                     })
                     .OrderByDescending(gs => gs.Score)
+                    .Take(10)
                     .ToListAsync();
             }
         }
