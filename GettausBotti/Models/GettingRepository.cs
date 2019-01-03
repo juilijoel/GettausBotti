@@ -63,6 +63,7 @@ namespace GettausBotti.Models
                 return await ctx.GetAttempts
                     .Where(ga => ga.ChatId == paChatId)
                     .GroupBy(ga => new { ga.ChatId, ga.UserId })
+                    .Where(ga => ga.Count(gag => gag.IsGet) > 0)
                     .Select(ga => new GetScore
                     {
                         UserId = ga.Key.UserId,
