@@ -16,9 +16,11 @@ namespace GettausBotti
 {
     class Program
     {
-        static ITelegramBotClient botClient;
-        static List<GetTime> getTimes;
-        static GettingRepository gr;
+        static ITelegramBotClient _botClient;
+        static List<GetTime> _getTimes;
+        static GettingRepository _gr;
+        private static IConfigurationRoot _config;
+        private static PenaltyBox _pb;
 
         public static void Main(string[] args)
         {
@@ -28,24 +30,23 @@ namespace GettausBotti
 #else
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
 #endif
-            var config = builder.Build();
 
-            //Set getting times
-            getTimes = Extensions.GetGetTimes(config);
-
-            //Init database access
-            gr = new GettingRepository();
+            //Init private objects
+            _config = builder.Build();
+            _getTimes = Extensions.GetGetTimes(_config);
+            _gr = new GettingRepository();
+            _pb = new PenaltyBox();
 
             //Init bot client
-            botClient = new TelegramBotClient(config["accessToken"]);
-            var me = botClient.GetMeAsync().Result;
+            _botClient = new TelegramBotClient(_config["accessToken"]);
+            var me = _botClient.GetMeAsync().Result;
 
             Console.WriteLine(
               $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
             );
 
-            botClient.OnMessage += Bot_OnMessage;
-            botClient.StartReceiving();
+            _botClient.OnMessage += Bot_OnMessage;
+            _botClient.StartReceiving();
             Thread.Sleep(int.MaxValue);
         }
 
@@ -67,32 +68,24 @@ namespace GettausBotti
                     //User tried to GET
                     case "/get":
                         var response = await TryGetAsync(e.Message);
-                        if (response.IsGet)
+                        Console.WriteLine($"Get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
+                        if (response.ResponseMessage != null)
                         {
-                            await botClient.SendTextMessageAsync(e.Message.Chat, response.ResponseMessage, replyToMessageId: e.Message.MessageId);
-                            Console.WriteLine($"Successful get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Failed get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
-                            if (response.ResponseMessage != null)
-                            {
-                                await botClient.SendTextMessageAsync(e.Message.Chat, response.ResponseMessage, replyToMessageId: e.Message.MessageId);
-                            }
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, response.ResponseMessage, replyToMessageId: e.Message.MessageId);
                         }
                         break;
                         
                     case "/scores":
-                    {
-                        var scores = await gr.GetScores(e.Message.Chat.Id);
-                        await botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ScoresToMessageString(scores));
-                    }
+                        {
+                            var scores = await _gr.GetScores(e.Message.Chat.Id);
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ScoresToMessageString(scores));
+                        }
                         break;
 
                     case "/reverse":
-                    {
-                        await botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ReverseMessageText(e.Message));
-                    }
+                        {
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ReverseMessageText(e.Message));
+                        }
                         break;
                 }
             }
@@ -105,19 +98,34 @@ namespace GettausBotti
         private static async Task<GetResponse> TryGetAsync(Message message)
         {
             var messageLocalTime = message.Date.ToUniversalTime();
+            TimeSpan penaltyDuration;
+
+            //If user has active penalty, add more penalty
+            if (_pb.CheckPenalty(message.From.Id, message.Chat.Id, message.Date) != TimeSpan.Zero)
+            {
+                penaltyDuration = _pb.AddPenalty(message.From.Id, message.Chat.Id, message.Date,
+                    TimeSpan.FromMinutes(int.Parse(_config["penaltyDuration"])));
+                return new GetResponse()
+                {
+                    IsGet = false,
+                    ResponseMessage = "No getting during penalty! Penalty for " + penaltyDuration.TotalMinutes + " minutes."
+                };
+            };
 
             //If get minute is right, we try if it's the first attempt of current minute
-            if(getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute))
+            if(_getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute))
             {
-                 return await gr.SaveIfFirstGetOfMinuteAsync(message);
+                 return await _gr.SaveIfFirstGetOfMinuteAsync(message);
             }
 
-            //If get minute is wrong, we save a failed attempt
-            await gr.SaveFailedGet(message);
+            //If get minute is wrong, PUNISH
+            penaltyDuration = _pb.AddPenalty(message.From.Id, message.Chat.Id, message.Date,
+                TimeSpan.FromMinutes(int.Parse(_config["penaltyDuration"])));
+
             return new GetResponse
             {
                 IsGet = false,
-                ResponseMessage = null
+                ResponseMessage = "Shit get! Penalty for " + penaltyDuration.TotalMinutes + " minutes."
             };
         }
     }
