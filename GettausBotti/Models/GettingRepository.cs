@@ -25,7 +25,11 @@ namespace GettausBotti.Models
                                                          && ga.TimeStamp.Date == paMessage.Date.Date
                                                          && ga.TimeStamp.Hour == paMessage.Date.Hour
                                                          && ga.TimeStamp.Minute == paMessage.Date.Minute
-                                                         && ga.TimeStamp <= paMessage.Date)) return false;
+                                                         && ga.TimeStamp <= paMessage.Date))
+                {
+                    _semaphore.Release();
+                    return false;
+                }
 
                 await ctx.GetAttempts.AddAsync(new GetAttempt()
                 {
