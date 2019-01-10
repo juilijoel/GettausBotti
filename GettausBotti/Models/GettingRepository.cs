@@ -16,35 +16,39 @@ namespace GettausBotti.Models
 
         public async Task<bool> SaveIfFirstGetOfMinuteAsync(Message paMessage)
         {
-            using (var ctx = new GettingContext())
+            try
             {
                 await _semaphore.WaitAsync();
-
-                //return false if a previous get exists in the chat
-                if (await ctx.GetAttempts.AnyAsync(ga => ga.ChatId == paMessage.Chat.Id
-                                                         && ga.TimeStamp.Date == paMessage.Date.Date
-                                                         && ga.TimeStamp.Hour == paMessage.Date.Hour
-                                                         && ga.TimeStamp.Minute == paMessage.Date.Minute
-                                                         && ga.TimeStamp <= paMessage.Date))
+                using (var ctx = new GettingContext())
                 {
-                    _semaphore.Release();
-                    return false;
+                    //return false if a previous get exists in the chat
+                    if (await ctx.GetAttempts.AnyAsync(ga => ga.ChatId == paMessage.Chat.Id
+                                                             && ga.TimeStamp.Date == paMessage.Date.Date
+                                                             && ga.TimeStamp.Hour == paMessage.Date.Hour
+                                                             && ga.TimeStamp.Minute == paMessage.Date.Minute
+                                                             && ga.TimeStamp <= paMessage.Date))
+                    {
+                        return false;
+                    }
+
+                    await ctx.GetAttempts.AddAsync(new GetAttempt()
+                    {
+                        ChatId = paMessage.Chat.Id,
+                        UserId = paMessage.From.Id,
+                        TimeStamp = paMessage.Date,
+                        UserName = paMessage.From.Username,
+                        IsGet = true
+                    });
+
+                    await ctx.SaveChangesAsync();
+                    return true;
                 }
-
-                await ctx.GetAttempts.AddAsync(new GetAttempt()
-                {
-                    ChatId = paMessage.Chat.Id,
-                    UserId = paMessage.From.Id,
-                    TimeStamp = paMessage.Date,
-                    UserName = paMessage.From.Username,
-                    IsGet = true
-                });
-
-                await ctx.SaveChangesAsync();
-
-                _semaphore.Release();
-                return true;
             }
+            finally
+            {
+                _semaphore.Release();
+            }
+            
         }
 
         public async Task<bool> SaveFailedGet(Message paMessage)
