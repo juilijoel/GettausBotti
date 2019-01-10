@@ -14,7 +14,7 @@ namespace GettausBotti.Models
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
-        public async Task<bool> SaveIfFirstGetOfMinuteAsync(Message paMessage)
+        public async Task<GetResponse> SaveIfFirstGetOfMinuteAsync(Message paMessage)
         {
             try
             {
@@ -28,7 +28,10 @@ namespace GettausBotti.Models
                                                              && ga.TimeStamp.Minute == paMessage.Date.Minute
                                                              && ga.TimeStamp <= paMessage.Date))
                     {
-                        return false;
+                        return new GetResponse()
+                        {
+                            IsGet = false
+                        };
                     }
 
                     await ctx.GetAttempts.AddAsync(new GetAttempt()
@@ -41,14 +44,17 @@ namespace GettausBotti.Models
                     });
 
                     await ctx.SaveChangesAsync();
-                    return true;
+                    return new GetResponse()
+                    {
+                        IsGet = true,
+                        ResponseMessage = "nice"
+                    };
                 }
             }
             finally
             {
                 _semaphore.Release();
             }
-            
         }
 
         public async Task<bool> SaveFailedGet(Message paMessage)
