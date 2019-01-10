@@ -66,14 +66,19 @@ namespace GettausBotti
                 {
                     //User tried to GET
                     case "/get":
-                        if (await TryGetAsync(e.Message))
+                        var response = await TryGetAsync(e.Message);
+                        if (response.IsGet)
                         {
-                            await botClient.SendTextMessageAsync(e.Message.Chat, "nice", replyToMessageId: e.Message.MessageId);
+                            await botClient.SendTextMessageAsync(e.Message.Chat, response.ResponseMessage, replyToMessageId: e.Message.MessageId);
                             Console.WriteLine($"Successful get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
                         }
                         else
                         {
                             Console.WriteLine($"Failed get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
+                            if (response.ResponseMessage != null)
+                            {
+                                await botClient.SendTextMessageAsync(e.Message.Chat, response.ResponseMessage, replyToMessageId: e.Message.MessageId);
+                            }
                         }
                         break;
                         
@@ -97,19 +102,23 @@ namespace GettausBotti
             }
         }
 
-        private static async Task<bool> TryGetAsync(Message message)
+        private static async Task<GetResponse> TryGetAsync(Message message)
         {
             var messageLocalTime = message.Date.ToUniversalTime();
 
             //If get minute is right, we try if it's the first attempt of current minute
             if(getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute))
             {
-                return await gr.SaveIfFirstGetOfMinuteAsync(message);
+                 return await gr.SaveIfFirstGetOfMinuteAsync(message);
             }
 
             //If get minute is wrong, we save a failed attempt
             await gr.SaveFailedGet(message);
-            return false;
+            return new GetResponse
+            {
+                IsGet = false,
+                ResponseMessage = null
+            };
         }
     }
 }
