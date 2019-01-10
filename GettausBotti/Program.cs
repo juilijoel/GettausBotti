@@ -20,7 +20,7 @@ namespace GettausBotti
         static List<GetTime> getTimes;
         static GettingRepository gr;
 
-        static public void Main(string[] args)
+        public static void Main(string[] args)
         {
             //Set config file
 #if DEBUG
@@ -31,7 +31,7 @@ namespace GettausBotti
             var config = builder.Build();
 
             //Set getting times
-            getTimes = Helper.GetGetTimes(config);
+            getTimes = Extensions.GetGetTimes(config);
 
             //Init database access
             gr = new GettingRepository();
@@ -50,7 +50,7 @@ namespace GettausBotti
         }
 
 
-        static async void Bot_OnMessage(object sender, MessageEventArgs e)
+        private static async void Bot_OnMessage(object sender, MessageEventArgs e)
         {
             try
             {
@@ -69,7 +69,7 @@ namespace GettausBotti
                         if (await TryGetAsync(e.Message))
                         {
                             await botClient.SendTextMessageAsync(e.Message.Chat, "nice", replyToMessageId: e.Message.MessageId);
-                            Console.WriteLine($"Successful get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat}");
+                            Console.WriteLine($"Successful get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
                         }
                         else
                         {
@@ -80,13 +80,13 @@ namespace GettausBotti
                     case "/scores":
                     {
                         var scores = await gr.GetScores(e.Message.Chat.Id);
-                        await botClient.SendTextMessageAsync(e.Message.Chat, Helper.ScoresToMessageString(scores));
+                        await botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ScoresToMessageString(scores));
                     }
                         break;
 
                     case "/reverse":
                     {
-                        await botClient.SendTextMessageAsync(e.Message.Chat, Helper.ReverseMessageText(e.Message));
+                        await botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ReverseMessageText(e.Message));
                     }
                         break;
                 }
@@ -97,7 +97,7 @@ namespace GettausBotti
             }
         }
 
-        static async Task<bool> TryGetAsync(Message message)
+        private static async Task<bool> TryGetAsync(Message message)
         {
             var messageLocalTime = message.Date.ToUniversalTime();
 

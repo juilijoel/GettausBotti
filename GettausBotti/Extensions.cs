@@ -9,7 +9,7 @@ using Telegram.Bot.Types;
 
 namespace GettausBotti
 {
-    public static class Helper
+    public static class Extensions
     {
         public static string ScoresToMessageString(List<GetScore> scores)
         {

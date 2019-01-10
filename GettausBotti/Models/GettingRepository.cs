@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
@@ -11,10 +12,14 @@ namespace GettausBotti.Models
 {
     public class GettingRepository
     {
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+
         public async Task<bool> SaveIfFirstGetOfMinuteAsync(Message paMessage)
         {
             using (var ctx = new GettingContext())
             {
+                await _semaphore.WaitAsync();
+
                 //return false if a previous get exists in the chat
                 if (await ctx.GetAttempts.AnyAsync(ga => ga.ChatId == paMessage.Chat.Id
                                                          && ga.TimeStamp.Date == paMessage.Date.Date
@@ -33,6 +38,7 @@ namespace GettausBotti.Models
 
                 await ctx.SaveChangesAsync();
 
+                _semaphore.Release();
                 return true;
             }
         }
