@@ -25,12 +25,13 @@ namespace GettausBotti.DataTypes
 
         public TimeSpan AddPenalty(long userId, long chatId, DateTime timeStamp, TimeSpan duration)
         {
-            CleanPenalties(timeStamp);
             var key = new Tuple<long, long>(chatId, userId);
 
             if (_penalties.ContainsKey(key))
             {
-                return _penalties[key].Duration += duration;
+                _penalties[key].TimeStamp = timeStamp;
+                _penalties[key].Duration = duration;
+                return duration;
             }
 
             _penalties.Add(key, new Penalty()
@@ -46,25 +47,17 @@ namespace GettausBotti.DataTypes
 
         public TimeSpan CheckPenalty(long userId, long chatId, DateTime timeStamp)
         {
-            CleanPenalties(timeStamp);
             var key = new Tuple<long, long>(chatId, userId);
 
             if (_penalties.ContainsKey(key))
             {
-                return _penalties[key].Duration - (_penalties[key].TimeStamp - timeStamp);
+                var penaltyEndTime = _penalties[key].TimeStamp.Add(_penalties[key].Duration);
+
+                if(penaltyEndTime > timeStamp)
+                return penaltyEndTime - timeStamp;
             }
 
             return TimeSpan.Zero;
-        }
-
-        private void CleanPenalties(DateTime currentTimeStamp)
-        {
-            var toRemove = _penalties.Where(p => p.Value.TimeStamp.Add(p.Value.Duration) < currentTimeStamp).Select(p => p.Key);
-
-            foreach (var key in toRemove)
-            {
-                _penalties.Remove(key);
-            }
         }
     }
 
