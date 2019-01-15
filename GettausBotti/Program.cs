@@ -98,17 +98,15 @@ namespace GettausBotti
         private static async Task<GetResponse> TryGetAsync(Message message)
         {
             var messageLocalTime = message.Date.ToUniversalTime();
-            TimeSpan penaltyDuration;
+            TimeSpan penaltyDuration = _pb.CheckPenalty(message.From.Id, message.Chat.Id, message.Date);
 
-            //If user has active penalty, add more penalty
-            if (_pb.CheckPenalty(message.From.Id, message.Chat.Id, message.Date) != TimeSpan.Zero)
+            //If user has active penalty, return current penalty 
+            if (penaltyDuration != TimeSpan.Zero)
             {
-                penaltyDuration = _pb.AddPenalty(message.From.Id, message.Chat.Id, message.Date,
-                    TimeSpan.FromMinutes(int.Parse(_config["penaltyDuration"])));
                 return new GetResponse()
                 {
                     IsGet = false,
-                    ResponseMessage = "No getting during penalty! Penalty for " + penaltyDuration.TotalMinutes + " minutes."
+                    ResponseMessage = "Penalty remaining: " + penaltyDuration.Minutes + ":" + penaltyDuration.Seconds
                 };
             };
 
