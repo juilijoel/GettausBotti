@@ -106,9 +106,23 @@ namespace GettausBotti
                 return new GetResponse()
                 {
                     IsGet = false,
-                    ResponseMessage = "Penalty remaining: " + penaltyDuration.Minutes + ":" + penaltyDuration.Seconds
+                    ResponseMessage = penaltyDuration.Seconds + "s penalty remaining"
                 };
             };
+
+            //If get minute is on penalty zone (one minute before GetTime), then punish
+            if (_getTimes.Any(gt =>
+                gt.PenaltyZone().Hour == messageLocalTime.Hour && gt.PenaltyZone().Minute == messageLocalTime.Minute))
+            {
+                penaltyDuration = _pb.AddPenalty(message.From.Id, message.Chat.Id, message.Date,
+                    TimeSpan.FromSeconds(int.Parse(_config["penaltyDuration"])));
+
+                return new GetResponse
+                {
+                    IsGet = false,
+                    ResponseMessage = "shit get, " + penaltyDuration.TotalSeconds + "s penalty"
+                };
+            }
 
             //If get minute is right, we try if it's the first attempt of current minute
             if(_getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute))
@@ -116,14 +130,10 @@ namespace GettausBotti
                  return await _gr.SaveIfFirstGetOfMinuteAsync(message);
             }
 
-            //If get minute is wrong, PUNISH
-            penaltyDuration = _pb.AddPenalty(message.From.Id, message.Chat.Id, message.Date,
-                TimeSpan.FromMinutes(int.Parse(_config["penaltyDuration"])));
-
             return new GetResponse
             {
                 IsGet = false,
-                ResponseMessage = "Shit get! Penalty for " + penaltyDuration.TotalMinutes + " minutes."
+                ResponseMessage = "shit get"
             };
         }
     }
