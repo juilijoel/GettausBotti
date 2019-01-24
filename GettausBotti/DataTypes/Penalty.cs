@@ -45,7 +45,7 @@ namespace GettausBotti.DataTypes
             return duration;
         }
 
-        public TimeSpan CheckPenalty(long userId, long chatId, DateTime timeStamp)
+        public TimeSpan HasPenalty(long userId, long chatId, DateTime timeStamp)
         {
             var key = new Tuple<long, long>(chatId, userId);
 

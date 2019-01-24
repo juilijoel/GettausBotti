@@ -17,7 +17,7 @@ namespace GettausBotti
     class Program
     {
         static ITelegramBotClient _botClient;
-        static List<GetTime> _getTimes;
+        static List<GetObject> _getTimes;
         static GettingRepository _gr;
         private static IConfigurationRoot _config;
         private static PenaltyBox _pb;
@@ -98,7 +98,7 @@ namespace GettausBotti
         private static async Task<GetResponse> TryGetAsync(Message message)
         {
             var messageLocalTime = message.Date.ToUniversalTime();
-            TimeSpan penaltyDuration = _pb.CheckPenalty(message.From.Id, message.Chat.Id, message.Date);
+            TimeSpan penaltyDuration = _pb.HasPenalty(message.From.Id, message.Chat.Id, message.Date);
 
             //If user has active penalty, return current penalty 
             if (penaltyDuration != TimeSpan.Zero)
@@ -110,9 +110,8 @@ namespace GettausBotti
                 };
             };
 
-            //If get minute is on penalty zone (one minute before GetTime), then punish
-            if (_getTimes.Any(gt =>
-                gt.PenaltyZone().Hour == messageLocalTime.Hour && gt.PenaltyZone().Minute == messageLocalTime.Minute))
+            //If get minute is on penalty zone (one minute before GetObject), then punish
+            if (_getTimes.Any(gt => gt.CheckPenalty(messageLocalTime)))
             {
                 penaltyDuration = _pb.AddPenalty(message.From.Id, message.Chat.Id, message.Date,
                     TimeSpan.FromSeconds(int.Parse(_config["penaltyDuration"])));
@@ -125,7 +124,7 @@ namespace GettausBotti
             }
 
             //If get minute is right, we try if it's the first attempt of current minute
-            if(_getTimes.Any(gt => gt.Hour == messageLocalTime.Hour && gt.Minute == messageLocalTime.Minute))
+            if(_getTimes.Any(gt => gt.CheckGet(messageLocalTime)))
             {
                  return await _gr.SaveIfFirstGetOfMinuteAsync(message);
             }

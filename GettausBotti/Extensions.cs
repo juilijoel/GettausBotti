@@ -24,9 +24,9 @@ namespace GettausBotti
             return resultString;
         }
 
-        public static List<GetTime> GetGetTimes(IConfigurationRoot config)
+        public static List<GetObject> GetGetTimes(IConfigurationRoot config)
         {
-            return config.GetSection("getTimes").GetChildren().Select(gt => new GetTime
+            return config.GetSection("getTimes").GetChildren().Select(gt => new GetObject
             {
                 Hour = int.Parse(gt.Value.Split(":")[0]),
                 Minute = int.Parse(gt.Value.Split(":")[1]),
