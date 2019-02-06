@@ -12,7 +12,7 @@ namespace GettausBotti.DataTypes
         private GetObject _penaltyZone;
     
         //Custom response message of the get
-        public string Message { get; set; }
+        public List<string> Messages { get; set; }
 
         public bool CheckGet(DateTime paTimeStamp)
         {
@@ -27,6 +27,11 @@ namespace GettausBotti.DataTypes
             }
 
             return _penaltyZone.CheckGet(paTimeStamp);
+        }
+
+        public string RandomMessage()
+        {
+            return Messages.PickRandom();
         }
 
         //PenaltyZone means previous minute before GetObject

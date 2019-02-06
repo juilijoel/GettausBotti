@@ -26,10 +26,11 @@ namespace GettausBotti
 
         public static List<GetObject> GetGetTimes(IConfigurationRoot config)
         {
-            return config.GetSection("getTimes").GetChildren().Select(gt => new GetObject
+            return config.GetSection("gets").GetChildren().Select(g => new GetObject
             {
-                Hour = int.Parse(gt.Value.Split(":")[0]),
-                Minute = int.Parse(gt.Value.Split(":")[1]),
+                Hour = int.Parse(g.GetSection("time").Value.Split(":")[0]),
+                Minute = int.Parse(g.GetSection("time").Value.Split(":")[1]),
+                Messages = g.GetSection("messages").GetChildren().Select(m => m.Value.ToString()).ToList()
             }).ToList();
         }
 
@@ -50,5 +51,22 @@ namespace GettausBotti
         {
             return string.Join("", s.GraphemeClusters().Reverse().ToArray());
         }
+
+
+        public static T PickRandom<T>(this IEnumerable<T> source)
+        {
+            return source.PickRandom(1).Single();
+        }
+
+        public static IEnumerable<T> PickRandom<T>(this IEnumerable<T> source, int count)
+        {
+            return source.Shuffle().Take(count);
+        }
+
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
+        {
+            return source.OrderBy(x => Guid.NewGuid());
+        }
+        
     }
 }
