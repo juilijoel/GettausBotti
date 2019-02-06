@@ -18,6 +18,7 @@ namespace GettausBotti
     {
         static ITelegramBotClient _botClient;
         static List<GetObject> _getTimes;
+        static List<string> _failMessages;
         static GettingRepository _gr;
         private static IConfigurationRoot _config;
         private static PenaltyBox _pb;
@@ -34,6 +35,7 @@ namespace GettausBotti
             //Init private objects
             _config = builder.Build();
             _getTimes = Extensions.GetGetTimes(_config);
+            _failMessages = _config.GetSection("failMessages").GetChildren().Select(fm => fm.Value.ToString()).ToList();
             _gr = new GettingRepository();
             _pb = new PenaltyBox();
 
@@ -119,7 +121,7 @@ namespace GettausBotti
                 return new GetResponse
                 {
                     IsGet = false,
-                    ResponseMessage = "shit get, " + penaltyDuration.TotalSeconds + "s penalty"
+                    ResponseMessage = _failMessages.PickRandom() + ", " + penaltyDuration.TotalSeconds + "s penalty"
                 };
             }
 
@@ -134,7 +136,7 @@ namespace GettausBotti
             return new GetResponse
             {
                 IsGet = false,
-                ResponseMessage = "shit get"
+                ResponseMessage = _failMessages.PickRandom()
             };
         }
     }
