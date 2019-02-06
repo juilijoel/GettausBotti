@@ -14,7 +14,7 @@ namespace GettausBotti.Models
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
-        public async Task<GetResponse> SaveIfFirstGetOfMinuteAsync(Message paMessage)
+        public async Task<GetResponse> SaveIfFirstGetOfMinuteAsync(Message paMessage, GetObject paGetObject)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace GettausBotti.Models
                     return new GetResponse()
                     {
                         IsGet = true,
-                        ResponseMessage = "nice"
+                        ResponseMessage = paGetObject.RandomMessage()
                     };
                 }
             }

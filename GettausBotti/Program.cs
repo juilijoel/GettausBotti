@@ -123,10 +123,12 @@ namespace GettausBotti
                 };
             }
 
+            var succesfulGetObject = _getTimes.FirstOrDefault(gt => gt.CheckGet(messageLocalTime));
+
             //If get minute is right, we try if it's the first attempt of current minute
-            if(_getTimes.Any(gt => gt.CheckGet(messageLocalTime)))
+            if (succesfulGetObject != null)
             {
-                 return await _gr.SaveIfFirstGetOfMinuteAsync(message);
+                 return await _gr.SaveIfFirstGetOfMinuteAsync(message, succesfulGetObject);
             }
 
             return new GetResponse
