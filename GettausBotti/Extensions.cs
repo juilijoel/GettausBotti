@@ -71,7 +71,7 @@ namespace GettausBotti
         public static string TimeMessage(TimeZoneInfo paTimeZoneInfo, DateTime paDateTime)
         {
             var resultTime = TimeZoneInfo.ConvertTimeFromUtc(paDateTime, paTimeZoneInfo);
-            return $"time is: {resultTime:T}";
+            return $"time is: {resultTime:HH:mm:ss}";
         }
 
         public static string CommandFromMessage(Message message, string botName)
