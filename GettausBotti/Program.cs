@@ -20,7 +20,9 @@ namespace GettausBotti
         static List<GetObject> _getTimes;
         static List<string> _failMessages;
         static GettingRepository _gr;
+        private static User _botUser;
         private static IConfigurationRoot _config;
+        private static TimeZoneInfo _timeZoneInfo;
         private static PenaltyBox _pb;
 
         public static void Main(string[] args)
@@ -34,6 +36,7 @@ namespace GettausBotti
 
             //Init private objects
             _config = builder.Build();
+            _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(_config["timezone"]);
             _getTimes = Extensions.GetGetTimes(_config);
             _failMessages = _config.GetSection("failMessages").GetChildren().Select(fm => fm.Value.ToString()).ToList();
             _gr = new GettingRepository();
@@ -41,10 +44,10 @@ namespace GettausBotti
 
             //Init bot client
             _botClient = new TelegramBotClient(_config["accessToken"]);
-            var me = _botClient.GetMeAsync().Result;
+            _botUser = _botClient.GetMeAsync().Result;
 
             Console.WriteLine(
-              $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
+              $"Hello, World! I am user {_botUser.Id} and my name is {_botUser.FirstName}."
             );
 
             _botClient.OnMessage += Bot_OnMessage;
@@ -62,7 +65,7 @@ namespace GettausBotti
 
                 Console.WriteLine($"Received a command in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
 
-                var command = e.Message.EntityValues.FirstOrDefault().Split("@")[0];
+                var command = Extensions.CommandFromMessage(e.Message, _botUser.FirstName);
 
                 //Here we handle the user input
                 switch (command)
@@ -89,6 +92,12 @@ namespace GettausBotti
                             await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ReverseMessageText(e.Message));
                         }
                         break;
+
+                    case "/time":
+                        {
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.TimeMessage(_timeZoneInfo, e.Message.Date));
+                        }   
+                        break;
                 }
             }
             catch(Exception ex)
@@ -99,7 +108,7 @@ namespace GettausBotti
 
         private static async Task<GetResponse> TryGetAsync(Message message)
         {
-            var messageLocalTime = message.Date.ToUniversalTime();
+            var messageLocalTime = TimeZoneInfo.ConvertTimeFromUtc(message.Date, _timeZoneInfo);
             TimeSpan penaltyDuration = _pb.HasPenalty(message.From.Id, message.Chat.Id, message.Date);
 
             //If user has active penalty, return current penalty 
@@ -115,7 +124,7 @@ namespace GettausBotti
             //If get minute is on penalty zone (one minute before GetObject), then punish
             if (_getTimes.Any(gt => gt.CheckPenalty(messageLocalTime)))
             {
-                penaltyDuration = _pb.AddPenalty(message.From.Id, message.Chat.Id, message.Date,
+                penaltyDuration = _pb.AddPenalty(message.From.Id, message.Chat.Id, messageLocalTime,
                     TimeSpan.FromSeconds(int.Parse(_config["penaltyDuration"])));
 
                 return new GetResponse
