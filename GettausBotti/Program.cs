@@ -65,7 +65,7 @@ namespace GettausBotti
 
                 Console.WriteLine($"Received a command in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
 
-                var command = Extensions.CommandFromMessage(e.Message, _botUser.FirstName);
+                var command = Extensions.CommandFromMessage(e.Message, _botUser.Username);
 
                 //Here we handle the user input
                 switch (command)
