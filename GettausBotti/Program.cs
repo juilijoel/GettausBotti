@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace GettausBotti
 {
@@ -79,11 +80,11 @@ namespace GettausBotti
                             await _botClient.SendTextMessageAsync(e.Message.Chat, response.ResponseMessage, replyToMessageId: e.Message.MessageId);
                         }
                         break;
-                        
+
                     case "/scores":
                         {
-                            var scores = await _gr.GetScores(e.Message.Chat.Id);
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ScoresToMessageString(scores));
+                            var scores = await _gr.GetScores(e.Message.Chat.Id, int.Parse(_config["topCount"]));
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ScoresToMessageString(scores, _config["topHeader"], int.Parse(_config["lineLenght"])), parseMode: ParseMode.Markdown);
                         }
                         break;
 
@@ -109,7 +110,7 @@ namespace GettausBotti
         private static async Task<GetResponse> TryGetAsync(Message message)
         {
             var messageLocalTime = TimeZoneInfo.ConvertTimeFromUtc(message.Date, _timeZoneInfo);
-            TimeSpan penaltyDuration = _pb.HasPenalty(message.From.Id, message.Chat.Id, message.Date);
+            TimeSpan penaltyDuration = _pb.HasPenalty(message.From.Id, message.Chat.Id, messageLocalTime);
 
             //If user has active penalty, return current penalty 
             if (penaltyDuration != TimeSpan.Zero)
@@ -134,12 +135,12 @@ namespace GettausBotti
                 };
             }
 
-            var succesfulGetObject = _getTimes.FirstOrDefault(gt => gt.CheckGet(messageLocalTime));
+            var successfulGetObject = _getTimes.FirstOrDefault(gt => gt.CheckGet(messageLocalTime));
 
             //If get minute is right, we try if it's the first attempt of current minute
-            if (succesfulGetObject != null)
+            if (successfulGetObject != null)
             {
-                 return await _gr.SaveIfFirstGetOfMinuteAsync(message, succesfulGetObject);
+                 return await _gr.SaveIfFirstGetOfMinuteAsync(message, successfulGetObject);
             }
 
             return new GetResponse

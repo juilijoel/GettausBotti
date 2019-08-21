@@ -76,7 +76,7 @@ namespace GettausBotti.Models
             }
         }
 
-        public async Task<List<GetScore>> GetScores(long paChatId)
+        public async Task<List<GetScore>> GetScores(long paChatId, int topCount)
         {
             using (var ctx = new GettingContext())
             {
@@ -87,12 +87,33 @@ namespace GettausBotti.Models
                     .Select(ga => new GetScore
                     {
                         UserId = ga.Key.UserId,
-                        UserName = ga.Where(gag => gag.UserName != null).Select(gag => gag.UserName).FirstOrDefault(),
+                        UserName = ga.Where(gag => gag.UserName != null)
+                            .OrderByDescending(gag => gag.TimeStamp)
+                            .Select(gag => gag.UserName).FirstOrDefault(),
                         Score = ga.Count(gag => gag.IsGet)
                     })
                     .OrderByDescending(gs => gs.Score)
-                    .Take(10)
+                    .Take(topCount)
                     .ToListAsync();
+            }
+        }
+
+        public async Task<GetScore> GetScore(long paChatId, long paUserId)
+        {
+            using (var ctx = new GettingContext())
+            {
+                return await ctx.GetAttempts
+                    .Where(ga =>
+                        ga.ChatId == paChatId
+                        && ga.UserId == paUserId
+                        && ga.IsGet)
+                    .GroupBy(ga => ga.UserId)
+                    .Select(gag => new GetScore()
+                    {
+                        UserId = gag.FirstOrDefault().UserId,
+                        Score = gag.Count(),
+                        UserName = gag.FirstOrDefault().UserName
+                    }).FirstOrDefaultAsync();
             }
         }
     }
