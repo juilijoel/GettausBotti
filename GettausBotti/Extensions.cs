@@ -12,15 +12,21 @@ namespace GettausBotti
 {
     public static class Extensions
     {
-        public static string ScoresToMessageString(List<GetScore> scores)
+        public static string ScoresToMessageString(List<GetScore> scores, string header, int lineLength)
         {
-            var resultString = "";
+            var resultString = $"** {header} **\n";
+
+            //Monospace markdown
+            resultString += "```\n";
 
             foreach (var score in scores)
             {
-                resultString += score.ToString();
+                resultString += score.ToScoreLine(lineLength);
                 resultString += "\n";
             }
+
+            //End monospace
+            resultString += "```";
 
             return resultString;
         }
