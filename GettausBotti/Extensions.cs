@@ -86,11 +86,11 @@ namespace GettausBotti
 
             if (splitted.Length == 1)
             {
-                return splitted[0];
+                return splitted[0].ToLower();
             }
             if (splitted.Length > 1 && splitted[1].Trim() == botName)
             {
-                return splitted[0];
+                return splitted[0].ToLower();
             }
 
             return null;
