@@ -99,6 +99,34 @@ namespace GettausBotti
                             await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.TimeMessage(_timeZoneInfo, e.Message.Date));
                         }   
                         break;
+
+                    case "/gdpr":
+                        {
+                            bool removeEntries = Extensions.EnsureGdprRequest(e.Message, _botUser.Username);
+
+                            if (removeEntries)
+                            {
+                                if (await _gr.RemoveScores(e.Message.Contact.UserId))
+                                {
+                                    await _botClient.SendTextMessageAsync(e.Message.Chat,
+                                        "Your data has been removed.",
+                                        replyToMessageId: e.Message.MessageId);
+                                }
+                                else
+                                {
+                                    await _botClient.SendTextMessageAsync(e.Message.Chat,
+                                        "No data to be removed.",
+                                        replyToMessageId: e.Message.MessageId);
+                                }
+                            }
+                            else
+                            {
+                                await _botClient.SendTextMessageAsync(e.Message.Chat, 
+                                    "Type \"/gdpr delete\" to remove all of your getting data.\nThis action is permanent.", 
+                                    replyToMessageId: e.Message.MessageId, parseMode: ParseMode.Markdown);
+                            }
+                        }
+                        break;
                 }
             }
             catch(Exception ex)
