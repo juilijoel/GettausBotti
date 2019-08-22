@@ -116,5 +116,22 @@ namespace GettausBotti.Models
                     }).FirstOrDefaultAsync();
             }
         }
+
+        public async Task<bool> RemoveScores(long paUserId)
+        {
+            using (var ctx = new GettingContext())
+            {
+                var toBeRemoved = await ctx.GetAttempts.Where(ga => ga.UserId == paUserId).ToListAsync();
+                if (!toBeRemoved.Any())
+                {
+                    return false;
+                }
+
+                ctx.GetAttempts.RemoveRange(toBeRemoved);
+                await ctx.SaveChangesAsync();
+            }
+
+            return true;
+        }
     }
 }

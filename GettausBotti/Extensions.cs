@@ -94,6 +94,13 @@ namespace GettausBotti
             }
 
             return null;
-        } 
+        }
+
+        public static bool EnsureGdprRequest(Message message, string botName)
+        {
+            var trimmedMessage = message.Text.ToLower().Trim();
+
+            return trimmedMessage == "/gdpr delete" || trimmedMessage == $"/gdpr@{botName.ToLower()} delete";
+        }
     }
 }
