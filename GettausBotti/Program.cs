@@ -106,7 +106,7 @@ namespace GettausBotti
 
                             if (removeEntries)
                             {
-                                if (await _gr.RemoveScores(e.Message.Contact.UserId))
+                                if (await _gr.RemoveScores(e.Message.From.Id))
                                 {
                                     await _botClient.SendTextMessageAsync(e.Message.Chat,
                                         "Your data has been removed.",
