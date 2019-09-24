@@ -49,11 +49,11 @@ namespace GettausBotti.DataTypes
         {
             var key = new Tuple<long, long>(chatId, userId);
 
-            if (_penalties.ContainsKey(key))
-            {
-                var penaltyEndTime = _penalties[key].TimeStamp.Add(_penalties[key].Duration);
+            if (!_penalties.ContainsKey(key)) return TimeSpan.Zero;
+            var penaltyEndTime = _penalties[key].TimeStamp.Add(_penalties[key].Duration);
 
-                if(penaltyEndTime > timeStamp)
+            if (penaltyEndTime > timeStamp)
+            {
                 return penaltyEndTime - timeStamp;
             }
 

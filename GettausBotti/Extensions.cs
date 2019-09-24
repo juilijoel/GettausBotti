@@ -80,27 +80,16 @@ namespace GettausBotti
             return $"time is: {resultTime:HH:mm:ss}";
         }
 
-        public static string CommandFromMessage(Message message, string botName)
-        {
-            var splitted = message.EntityValues.FirstOrDefault().Split("@");
-
-            if (splitted.Length == 1)
-            {
-                return splitted[0].ToLower();
-            }
-            if (splitted.Length > 1 && splitted[1].Trim() == botName)
-            {
-                return splitted[0].ToLower();
-            }
-
-            return null;
-        }
-
         public static bool EnsureGdprRequest(Message message, string botName)
         {
             var trimmedMessage = message.Text.ToLower().Trim();
 
             return trimmedMessage == "/gdpr delete" || trimmedMessage == $"/gdpr@{botName.ToLower()} delete";
+        }
+
+        public static bool EnsureGdprRequest(Command command, string botName)
+        {
+            return command.CommandWord == "/gdpr" && command.Params.Count == 1 && command.Params[0] == "delete";
         }
     }
 }

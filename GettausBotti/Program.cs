@@ -66,13 +66,13 @@ namespace GettausBotti
 
                 Console.WriteLine($"Received a command in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
 
-                var command = Extensions.CommandFromMessage(e.Message, _botUser.Username);
+                var command = new Command(e.Message, _botUser.Username);
 
                 //Here we handle the user input
-                switch (command)
+                switch (command.CommandType)
                 {
                     //User tried to GET
-                    case "/get":
+                    case Command.CommandEnum.Get:
                         var response = await TryGetAsync(e.Message);
                         Console.WriteLine($"Get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
                         if (response.ResponseMessage != null)
@@ -81,26 +81,26 @@ namespace GettausBotti
                         }
                         break;
 
-                    case "/scores":
+                    case Command.CommandEnum.Scores:
                         {
                             var scores = await _gr.GetScores(e.Message.Chat.Id, int.Parse(_config["topCount"]));
                             await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ScoresToMessageString(scores, _config["topHeader"], int.Parse(_config["lineLenght"])), parseMode: ParseMode.Markdown);
                         }
                         break;
 
-                    case "/reverse":
+                    case Command.CommandEnum.Reverse:
                         {
                             await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ReverseMessageText(e.Message));
                         }
                         break;
 
-                    case "/time":
+                    case Command.CommandEnum.Time:
                         {
                             await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.TimeMessage(_timeZoneInfo, e.Message.Date));
                         }   
                         break;
 
-                    case "/gdpr":
+                    case Command.CommandEnum.Gdpr:
                         {
                             bool removeEntries = Extensions.EnsureGdprRequest(e.Message, _botUser.Username);
 
