@@ -98,6 +98,43 @@ namespace GettausBotti.Models
             }
         }
 
+        public async Task<List<FameRow>> GetHallOfFame(long paChatId)
+        {
+            using (var ctx = new GettingContext())
+            {
+                var getsByYear = await ctx.GetAttempts
+                    .Where(ga => ga.ChatId == paChatId)
+                    .OrderByDescending(ga => ga.TimeStamp)
+                    .GroupBy(ga => new { ga.ChatId, ga.UserId, ga.TimeStamp.Year })
+                    .Select(ga => new FameRow
+                    {
+                        Year = ga.Key.Year,
+                        UserId = ga.Key.UserId,
+                        UserName = ga.Where(gag => gag.UserName != null)
+                            .OrderByDescending(gag => gag.TimeStamp)
+                            .Select(gag => gag.UserName).FirstOrDefault(),
+                        Score = ga.Count(gag => gag.IsGet)
+                    }).ToListAsync();
+
+                var yearDict = new Dictionary<int, FameRow>();
+                var tempRow = new FameRow();
+
+                foreach(var g in getsByYear)
+                {
+                    if(yearDict.TryGetValue(g.Year, out tempRow))
+                    {
+                        if(g.Score > tempRow.Score)
+                        {
+                            yearDict[g.Year] = g;
+                        }
+                    }
+                    yearDict.Add(g.Year, g);
+                }
+
+                return yearDict.Select(fr => fr.Value).ToList();
+            }
+        }
+
         public async Task<GetScore> GetScore(long paChatId, long paUserId)
         {
             using (var ctx = new GettingContext())

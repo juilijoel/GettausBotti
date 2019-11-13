@@ -4,24 +4,22 @@ using System.Text;
 
 namespace GettausBotti.DataTypes
 {
-    public class GetScore
+    public class FameRow
     {
+        public int Year { get; set; }
+        public int Score { get; set; }
         public long UserId { get; set; }
         public string UserName { get; set; }
-        public int Score { get; set; }
-
-        public override string ToString()
-        {
-            return (UserName ?? "no username") + ": " + Score;
-        }
 
         public string ToStringRow(int length)
         {
-            var result = (UserName ?? "no username");
+            var nameAndScore = $"{UserName} ({Score})";
+
+            var result = Year.ToString();
             result = result.PadRight(length);
-            result = result.Substring(0, length - Score.ToString().Length - 1);
+            result = result.Substring(0, length - nameAndScore.ToString().Length - 1);
             result += " ";
-            result += Score;
+            result += nameAndScore;
 
             return result;
         }

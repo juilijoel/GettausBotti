@@ -88,6 +88,13 @@ namespace GettausBotti
                         }
                         break;
 
+                    case "/halloffame":
+                        {
+                            var rows = await _gr.GetHallOfFame(e.Message.Chat.Id);
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.HallOfFameToString(rows, _config["hallOfFameHeader"], int.Parse(_config["lineLenght"])), parseMode: ParseMode.Markdown);
+                        }
+                        break;
+
                     case "/reverse":
                         {
                             await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ReverseMessageText(e.Message));

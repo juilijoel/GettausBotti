@@ -21,7 +21,26 @@ namespace GettausBotti
 
             foreach (var score in scores)
             {
-                resultString += score.ToScoreLine(lineLength);
+                resultString += score.ToStringRow(lineLength);
+                resultString += "\n";
+            }
+
+            //End monospace
+            resultString += "```";
+
+            return resultString;
+        }
+
+        public static string HallOfFameToString(List<FameRow> rows, string header, int lineLength)
+        {
+            var resultString = $"** {header} **\n";
+
+            //Monospace markdown
+            resultString += "```\n";
+
+            foreach (var row in rows)
+            {
+                resultString += row.ToStringRow(lineLength);
                 resultString += "\n";
             }
 
