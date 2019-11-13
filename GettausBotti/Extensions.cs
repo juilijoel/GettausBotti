@@ -91,5 +91,21 @@ namespace GettausBotti
         {
             return command.CommandWord == "/gdpr" && command.Params.Count == 1 && command.Params[0] == "delete";
         }
+
+        public static string GetCommand(this Message msg, string botName)
+        {
+            var splitMessage = msg.EntityValues.FirstOrDefault().Split(" ");
+            var splitCommandKey = splitMessage[0].Split("@");
+
+            if (splitCommandKey.Length == 1)
+            {
+                return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(splitCommandKey[0].ToLower());
+            }
+            else if (splitCommandKey.Length > 1 && splitCommandKey[1].Trim() == botName)
+            {
+                return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(splitCommandKey[0].ToLower());
+            }
+            else throw new ArgumentException("invalid arguments");
+        }
     }
 }
