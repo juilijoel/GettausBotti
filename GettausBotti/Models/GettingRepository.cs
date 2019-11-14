@@ -76,12 +76,12 @@ namespace GettausBotti.Models
             }
         }
 
-        public async Task<List<GetScore>> GetScores(long paChatId, int topCount)
+        public async Task<List<GetScore>> GetScores(long paChatId, int topCount, int? paYear)
         {
             using (var ctx = new GettingContext())
             {
                 return await ctx.GetAttempts
-                    .Where(ga => ga.ChatId == paChatId)
+                    .Where(ga => ga.ChatId == paChatId && (paYear == null || ga.TimeStamp.Year == paYear))
                     .GroupBy(ga => new { ga.ChatId, ga.UserId })
                     .Where(ga => ga.Count(gag => gag.IsGet) > 0)
                     .Select(ga => new GetScore
@@ -98,13 +98,12 @@ namespace GettausBotti.Models
             }
         }
 
-        public async Task<List<FameRow>> GetHallOfFame(long paChatId)
+        public async Task<List<FameRow>> GetHallOfFame(long paChatId, int paStartingYear, int paCurrentYear)
         {
             using (var ctx = new GettingContext())
             {
                 var getsByYear = await ctx.GetAttempts
-                    .Where(ga => ga.ChatId == paChatId)
-                    .OrderByDescending(ga => ga.TimeStamp)
+                    .Where(ga => ga.ChatId == paChatId && ga.TimeStamp.Year >= paStartingYear && ga.TimeStamp.Year < paCurrentYear)
                     .GroupBy(ga => new { ga.ChatId, ga.UserId, ga.TimeStamp.Year })
                     .Select(ga => new FameRow
                     {
@@ -115,6 +114,11 @@ namespace GettausBotti.Models
                             .Select(gag => gag.UserName).FirstOrDefault(),
                         Score = ga.Count(gag => gag.IsGet)
                     }).ToListAsync();
+
+                if (!getsByYear.Any())
+                {
+                    return new List<FameRow>();
+                }
 
                 var yearDict = new Dictionary<int, FameRow>();
                 var tempRow = new FameRow();
@@ -131,7 +135,7 @@ namespace GettausBotti.Models
                     yearDict.Add(g.Year, g);
                 }
 
-                return yearDict.Select(fr => fr.Value).ToList();
+                return yearDict.OrderByDescending(fr => fr.Key).Select(fr => fr.Value).ToList();
             }
         }
 

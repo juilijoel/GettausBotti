@@ -67,6 +67,7 @@ namespace GettausBotti
                 Console.WriteLine($"Received a command in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
 
                 var command = Extensions.CommandFromMessage(e.Message, _botUser.Username);
+                var currentYear = TimeZoneInfo.ConvertTimeFromUtc(e.Message.Date, _timeZoneInfo).Year;
 
                 //Here we handle the user input
                 switch (command)
@@ -83,15 +84,46 @@ namespace GettausBotti
 
                     case "/scores":
                         {
-                            var scores = await _gr.GetScores(e.Message.Chat.Id, int.Parse(_config["topCount"]));
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ScoresToMessageString(scores, _config["topHeader"], int.Parse(_config["lineLenght"])), parseMode: ParseMode.Markdown);
+                            var scores = await _gr.GetScores(e.Message.Chat.Id, int.Parse(_config["topCount"]), currentYear);
+                            if (!scores.Any())
+                            {
+                                await _botClient.SendTextMessageAsync(e.Message.Chat, 
+                                    $"No scores for {currentYear} yet :(", 
+                                    parseMode: ParseMode.Markdown);
+                                break;
+                            }
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, 
+                                Extensions.ScoresToMessageString(scores, 
+                                    _config["topHeader"], 
+                                    int.Parse(_config["lineLenght"]), 
+                                    currentYear), 
+                                parseMode: ParseMode.Markdown);
+                        }
+                        break;
+
+                    case "/alltime":
+                        {
+                            var scores = await _gr.GetScores(e.Message.Chat.Id, int.Parse(_config["topCount"]), null);
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, 
+                                Extensions.ScoresToMessageString(scores, 
+                                    _config["allTimeHeader"], 
+                                    int.Parse(_config["lineLenght"]), null), 
+                                parseMode: ParseMode.Markdown);
                         }
                         break;
 
                     case "/halloffame":
                         {
-                            var rows = await _gr.GetHallOfFame(e.Message.Chat.Id);
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.HallOfFameToString(rows, _config["hallOfFameHeader"], int.Parse(_config["lineLenght"])), parseMode: ParseMode.Markdown);
+                            var rows = await _gr.GetHallOfFame(e.Message.Chat.Id, int.Parse(_config["startingYear"]), currentYear);
+                            if (!rows.Any())
+                            {
+                                break;
+                            }
+                            await _botClient.SendTextMessageAsync(e.Message.Chat, 
+                                    Extensions.HallOfFameToString(rows, 
+                                    _config["hallOfFameHeader"], 
+                                    int.Parse(_config["hallOfFameLineLength"])), 
+                                parseMode: ParseMode.Markdown);
                         }
                         break;
 

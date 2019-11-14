@@ -12,8 +12,10 @@ namespace GettausBotti
 {
     public static class Extensions
     {
-        public static string ScoresToMessageString(List<GetScore> scores, string header, int lineLength)
+        public static string ScoresToMessageString(List<GetScore> scores, string header, int lineLength, int? year)
         {
+            var yearString = year != null ? year.ToString() : "";
+            header = header.Replace("{year}", yearString);
             var resultString = $"** {header} **\n";
 
             //Monospace markdown
