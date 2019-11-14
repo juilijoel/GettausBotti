@@ -76,12 +76,12 @@ namespace GettausBotti.Models
             }
         }
 
-        public async Task<List<GetScore>> GetScores(long paChatId, int topCount)
+        public async Task<List<GetScore>> GetScores(long paChatId, int topCount, int? paYear)
         {
             using (var ctx = new GettingContext())
             {
                 return await ctx.GetAttempts
-                    .Where(ga => ga.ChatId == paChatId)
+                    .Where(ga => ga.ChatId == paChatId && (paYear == null || ga.TimeStamp.Year == paYear))
                     .GroupBy(ga => new { ga.ChatId, ga.UserId })
                     .Where(ga => ga.Count(gag => gag.IsGet) > 0)
                     .Select(ga => new GetScore
@@ -95,6 +95,47 @@ namespace GettausBotti.Models
                     .OrderByDescending(gs => gs.Score)
                     .Take(topCount)
                     .ToListAsync();
+            }
+        }
+
+        public async Task<List<FameRow>> GetHallOfFame(long paChatId, int paStartingYear, int paCurrentYear)
+        {
+            using (var ctx = new GettingContext())
+            {
+                var getsByYear = await ctx.GetAttempts
+                    .Where(ga => ga.ChatId == paChatId && ga.TimeStamp.Year >= paStartingYear && ga.TimeStamp.Year < paCurrentYear)
+                    .GroupBy(ga => new { ga.ChatId, ga.UserId, ga.TimeStamp.Year })
+                    .Select(ga => new FameRow
+                    {
+                        Year = ga.Key.Year,
+                        UserId = ga.Key.UserId,
+                        UserName = ga.Where(gag => gag.UserName != null)
+                            .OrderByDescending(gag => gag.TimeStamp)
+                            .Select(gag => gag.UserName).FirstOrDefault(),
+                        Score = ga.Count(gag => gag.IsGet)
+                    }).ToListAsync();
+
+                if (!getsByYear.Any())
+                {
+                    return new List<FameRow>();
+                }
+
+                var yearDict = new Dictionary<int, FameRow>();
+                var tempRow = new FameRow();
+
+                foreach(var g in getsByYear)
+                {
+                    if(yearDict.TryGetValue(g.Year, out tempRow))
+                    {
+                        if(g.Score > tempRow.Score)
+                        {
+                            yearDict[g.Year] = g;
+                        }
+                    }
+                    yearDict.Add(g.Year, g);
+                }
+
+                return yearDict.OrderByDescending(fr => fr.Key).Select(fr => fr.Value).ToList();
             }
         }
 
