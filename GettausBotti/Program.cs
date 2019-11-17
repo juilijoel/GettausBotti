@@ -114,9 +114,14 @@ namespace GettausBotti
 
                     case "/halloffame":
                         {
-                            var rows = await _gr.GetHallOfFame(e.Message.Chat.Id, int.Parse(_config["startingYear"]), currentYear);
+                            var startingYear = int.Parse(_config["startingYear"]);
+                            var rows = await _gr.GetHallOfFame(e.Message.Chat.Id, startingYear, currentYear);
                             if (!rows.Any())
                             {
+                                if(currentYear == startingYear)
+                                {
+                                    await _botClient.SendTextMessageAsync(e.Message.Chat, $"🏆 The Hall of Fame opens in {startingYear + 1} 🏆");
+                                }
                                 break;
                             }
                             await _botClient.SendTextMessageAsync(e.Message.Chat, 
