@@ -132,7 +132,10 @@ namespace GettausBotti.Models
                             yearDict[g.Year] = g;
                         }
                     }
-                    yearDict.Add(g.Year, g);
+                    else
+                    {
+                        yearDict.Add(g.Year, g);
+                    }
                 }
 
                 return yearDict.OrderByDescending(fr => fr.Key).Select(fr => fr.Value).ToList();
