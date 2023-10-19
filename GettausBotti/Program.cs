@@ -1,20 +1,20 @@
-﻿using GettausBotti.DataTypes;
-using GettausBotti.Models;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Telegram.Bot;
-using Telegram.Bot.Args;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-
-namespace GettausBotti
+﻿namespace GettausBotti
 {
+    using GettausBotti.DataTypes;
+    using GettausBotti.Models;
+    using Microsoft.Extensions.Configuration;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Telegram.Bot;
+    using Telegram.Bot.Exceptions;
+    using Telegram.Bot.Polling;
+    using Telegram.Bot.Types;
+    using Telegram.Bot.Types.Enums;
+
     class Program
     {
         static ITelegramBotClient _botClient;
@@ -29,11 +29,8 @@ namespace GettausBotti
         public static void Main(string[] args)
         {
             //Set config file
-#if DEBUG
-            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings_debug.json");
-#else
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
-#endif
+
 
             //Init private objects
             _config = builder.Build();
@@ -51,48 +48,60 @@ namespace GettausBotti
               $"Hello, World! I am user {_botUser.Id} and my name is {_botUser.FirstName}."
             );
 
-            _botClient.OnMessage += Bot_OnMessage;
-            _botClient.StartReceiving();
+            using CancellationTokenSource cts = new();
+
+            // StartReceiving does not block the caller thread. Receiving is done on the ThreadPool.
+            ReceiverOptions receiverOptions = new()
+            {
+                AllowedUpdates = [] // receive all update types except ChatMember related updates
+            };
+
+
+            _botClient.StartReceiving(
+                updateHandler: HandleUpdateAsync,
+                pollingErrorHandler: HandlePollingErrorAsync,
+                receiverOptions: receiverOptions,
+                cancellationToken: cts.Token
+            );
+
             Thread.Sleep(int.MaxValue);
         }
 
 
-        private static async void Bot_OnMessage(object sender, MessageEventArgs e)
+        private static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             try
             {
                 //Do nothing if no command in message
-                if (e.Message.EntityValues == null) return;
+                if (update.Message.EntityValues == null) return;
 
-                Console.WriteLine($"Received a command in chat {e.Message.Chat.Id}. Message universal time: {e.Message.Date.ToUniversalTime()}");
+                Console.WriteLine($"Received a command in chat {update.Message.Chat.Id}. Message universal time: {update.Message.Date.ToUniversalTime()}");
 
-                var command = Extensions.CommandFromMessage(e.Message, _botUser.Username);
-                var currentYear = TimeZoneInfo.ConvertTimeFromUtc(e.Message.Date, _timeZoneInfo).Year;
+                var command = Extensions.CommandFromMessage(update.Message, _botUser.Username);
+                var currentYear = TimeZoneInfo.ConvertTimeFromUtc(update.Message.Date, _timeZoneInfo).Year;
 
                 //Here we handle the user input
                 switch (command)
                 {
                     //User tried to GET
                     case "/get":
-                        var response = await TryGetAsync(e.Message);
-                        Console.WriteLine($"Get attempt from {e.Message.From.Username}, chatId: {e.Message.Chat.Id}");
+                        var response = await TryGetAsync(update.Message, cancellationToken);
+                        Console.WriteLine($"Get attempt from {update.Message.From.Username}, chatId: {update.Message.Chat.Id}");
                         if (response.ResponseMessage != null)
                         {
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, response.ResponseMessage, replyToMessageId: e.Message.MessageId);
+                            await _botClient.SendTextMessageAsync(update.Message.Chat, response.ResponseMessage, replyToMessageId: update.Message.MessageId, cancellationToken: cancellationToken);
                         }
                         break;
 
                     case "/scores":
                         {
-                            var scores = await _gr.GetScores(e.Message.Chat.Id, int.Parse(_config["topCount"]), currentYear);
-                            if (!scores.Any())
+                            var scores = await _gr.GetScores(update.Message.Chat.Id, int.Parse(_config["topCount"]), currentYear);
+                            if (scores.Count == 0)
                             {
-                                await _botClient.SendTextMessageAsync(e.Message.Chat, 
-                                    $"No scores for {currentYear} yet :(", 
-                                    parseMode: ParseMode.Markdown);
+                                await _botClient.SendTextMessageAsync(update.Message.Chat, $"No scores for {currentYear} yet :(", parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
                                 break;
                             }
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, 
+                            await _botClient.SendTextMessageAsync(update.Message.Chat, 
                                 Extensions.ScoresToMessageString(scores, 
                                     _config["topHeader"], 
                                     int.Parse(_config["lineLenght"]), 
@@ -103,71 +112,61 @@ namespace GettausBotti
 
                     case "/alltime":
                         {
-                            var scores = await _gr.GetScores(e.Message.Chat.Id, int.Parse(_config["topCount"]), null);
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, 
-                                Extensions.ScoresToMessageString(scores, 
+                            var scores = await _gr.GetScores(update.Message.Chat.Id, int.Parse(_config["topCount"]), null);
+                            await _botClient.SendTextMessageAsync(update.Message.Chat, Extensions.ScoresToMessageString(scores, 
                                     _config["allTimeHeader"], 
-                                    int.Parse(_config["lineLenght"]), null), 
-                                parseMode: ParseMode.Markdown);
+                                    int.Parse(_config["lineLenght"]), null), parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
                         }
                         break;
 
                     case "/halloffame":
                         {
                             var startingYear = int.Parse(_config["startingYear"]);
-                            var rows = await _gr.GetHallOfFame(e.Message.Chat.Id, startingYear, currentYear);
-                            if (!rows.Any())
+                            var rows = await _gr.GetHallOfFame(update.Message.Chat.Id, startingYear, currentYear);
+                            if (rows.Count == 0)
                             {
                                 if(currentYear == startingYear)
                                 {
-                                    await _botClient.SendTextMessageAsync(e.Message.Chat, $"🏆 The Hall of Fame opens in {startingYear + 1} 🏆");
+                                    await _botClient.SendTextMessageAsync(update.Message.Chat, $"🏆 The Hall of Fame opens in {startingYear + 1} 🏆", cancellationToken: cancellationToken);
                                 }
                                 break;
                             }
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, 
-                                    Extensions.HallOfFameToString(rows, 
+                            await _botClient.SendTextMessageAsync(update.Message.Chat, Extensions.HallOfFameToString(rows, 
                                     _config["hallOfFameHeader"], 
-                                    int.Parse(_config["hallOfFameLineLength"])), 
-                                parseMode: ParseMode.Markdown);
+                                    int.Parse(_config["hallOfFameLineLength"])), parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
                         }
                         break;
 
                     case "/reverse":
                         {
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.ReverseMessageText(e.Message));
+                            await _botClient.SendTextMessageAsync(update.Message.Chat, Extensions.ReverseMessageText(update.Message), cancellationToken: cancellationToken);
                         }
                         break;
 
                     case "/time":
                         {
-                            await _botClient.SendTextMessageAsync(e.Message.Chat, Extensions.TimeMessage(_timeZoneInfo, e.Message.Date));
+                            await _botClient.SendTextMessageAsync(update.Message.Chat, Extensions.TimeMessage(_timeZoneInfo, update.Message.Date), cancellationToken: cancellationToken);
                         }   
                         break;
 
                     case "/gdpr":
                         {
-                            bool removeEntries = Extensions.EnsureGdprRequest(e.Message, _botUser.Username);
+                            bool removeEntries = Extensions.EnsureGdprRequest(update.Message, _botUser.Username);
 
                             if (removeEntries)
                             {
-                                if (await _gr.RemoveScores(e.Message.From.Id))
+                                if (await _gr.RemoveScores(update.Message.From.Id))
                                 {
-                                    await _botClient.SendTextMessageAsync(e.Message.Chat,
-                                        "Your data has been removed.",
-                                        replyToMessageId: e.Message.MessageId);
+                                    await _botClient.SendTextMessageAsync(update.Message.Chat, "Your data has been removed.", replyToMessageId: update.Message.MessageId, cancellationToken: cancellationToken);
                                 }
                                 else
                                 {
-                                    await _botClient.SendTextMessageAsync(e.Message.Chat,
-                                        "No data to be removed.",
-                                        replyToMessageId: e.Message.MessageId);
+                                    await _botClient.SendTextMessageAsync(update.Message.Chat, "No data to be removed.", replyToMessageId: update.Message.MessageId, cancellationToken: cancellationToken);
                                 }
                             }
                             else
                             {
-                                await _botClient.SendTextMessageAsync(e.Message.Chat, 
-                                    "Type \"/gdpr delete\" to remove all of your getting data.\nThis action is permanent.", 
-                                    replyToMessageId: e.Message.MessageId, parseMode: ParseMode.Markdown);
+                                await _botClient.SendTextMessageAsync(update.Message.Chat, "Type \"/gdpr delete\" to remove all of your getting data.\nThis action is permanent.", replyToMessageId: update.Message.MessageId, parseMode: ParseMode.Markdown, cancellationToken: cancellationToken);
                             }
                         }
                         break;
@@ -179,7 +178,7 @@ namespace GettausBotti
             }
         }
 
-        private static async Task<GetResponse> TryGetAsync(Message message)
+        private static async Task<GetResponse> TryGetAsync(Message message, CancellationToken cancellationToken)
         {
             var messageLocalTime = TimeZoneInfo.ConvertTimeFromUtc(message.Date, _timeZoneInfo);
             TimeSpan penaltyDuration = _pb.HasPenalty(message.From.Id, message.Chat.Id, messageLocalTime);
@@ -220,6 +219,19 @@ namespace GettausBotti
                 IsGet = false,
                 ResponseMessage = _failMessages.PickRandom()
             };
+        }
+
+        private static Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        {
+            var ErrorMessage = exception switch
+            {
+                ApiRequestException apiRequestException
+                    => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                _ => exception.ToString()
+            };
+
+            Console.WriteLine(ErrorMessage);
+            return Task.CompletedTask;
         }
     }
 }

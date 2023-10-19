@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
-using Telegram.Bot.Types;
-
-namespace GettausBotti.DataTypes
+﻿namespace GettausBotti.DataTypes
 {
+    using System;
+    using System.Collections.Generic;
+
     public class Penalty
     {
         public long UserId { get; set; }
@@ -20,17 +17,17 @@ namespace GettausBotti.DataTypes
 
         public PenaltyBox()
         {
-            _penalties = new Dictionary<Tuple<long, long>, Penalty>();
+            _penalties = [];
         }
 
         public TimeSpan AddPenalty(long userId, long chatId, DateTime timeStamp, TimeSpan duration)
         {
             var key = new Tuple<long, long>(chatId, userId);
 
-            if (_penalties.ContainsKey(key))
+            if (_penalties.TryGetValue(key, out Penalty value))
             {
-                _penalties[key].TimeStamp = timeStamp;
-                _penalties[key].Duration = duration;
+                value.TimeStamp = timeStamp;
+                value.Duration = duration;
                 return duration;
             }
 
@@ -49,9 +46,9 @@ namespace GettausBotti.DataTypes
         {
             var key = new Tuple<long, long>(chatId, userId);
 
-            if (_penalties.ContainsKey(key))
+            if (_penalties.TryGetValue(key, out Penalty value))
             {
-                var penaltyEndTime = _penalties[key].TimeStamp.Add(_penalties[key].Duration);
+                var penaltyEndTime = value.TimeStamp.Add(value.Duration);
 
                 if(penaltyEndTime > timeStamp)
                 return penaltyEndTime - timeStamp;

@@ -1,15 +1,13 @@
-﻿using GettausBotti.DataTypes;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using Telegram.Bot.Types;
-
-namespace GettausBotti
+﻿namespace GettausBotti
 {
+    using GettausBotti.DataTypes;
+    using Microsoft.Extensions.Configuration;
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using Telegram.Bot.Types;
+
     public static class Extensions
     {
         public static string ScoresToMessageString(List<GetScore> scores, string header, int lineLength, int? year)
@@ -103,15 +101,15 @@ namespace GettausBotti
 
         public static string CommandFromMessage(Message message, string botName)
         {
-            var splitted = message.EntityValues.FirstOrDefault().Split("@");
+            var split = message.EntityValues.FirstOrDefault().Split("@");
 
-            if (splitted.Length == 1)
+            if (split.Length == 1)
             {
-                return splitted[0].ToLower();
+                return split[0].ToLower();
             }
-            if (splitted.Length > 1 && splitted[1].Trim() == botName)
+            if (split.Length > 1 && split[1].Trim() == botName)
             {
-                return splitted[0].ToLower();
+                return split[0].ToLower();
             }
 
             return null;
