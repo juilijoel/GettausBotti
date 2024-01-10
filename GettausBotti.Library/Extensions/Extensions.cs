@@ -1,6 +1,7 @@
-﻿namespace GettausBotti
+﻿namespace GettausBotti.Library.Extensions
 {
-    using GettausBotti.DataTypes;
+    using GettausBotti.Interfaces.Models;
+    using GettausBotti.Library.Models;
     using Microsoft.Extensions.Configuration;
     using System;
     using System.Collections.Generic;
@@ -10,7 +11,7 @@
 
     public static class Extensions
     {
-        public static string ScoresToMessageString(List<GetScore> scores, string header, int lineLength, int? year)
+        public static string ScoresToMessageString(IEnumerable<IGetScore> scores, string header, int lineLength, int? year)
         {
             var yearString = year != null ? year.ToString() : "";
             header = header.Replace("{year}", yearString);
@@ -31,7 +32,7 @@
             return resultString;
         }
 
-        public static string HallOfFameToString(List<FameRow> rows, string header, int lineLength)
+        public static string HallOfFameToString(IEnumerable<IFameRow> rows, string header, int lineLength)
         {
             var resultString = $"** {header} **\n";
 
@@ -50,14 +51,14 @@
             return resultString;
         }
 
-        public static List<GetObject> GetGetTimes(IConfigurationRoot config)
+        public static List<IGetObject> GetGetTimes(IConfiguration config)
         {
             return config.GetSection("gets").GetChildren().Select(g => new GetObject
             {
                 Hour = int.Parse(g.GetSection("time").Value.Split(":")[0]),
                 Minute = int.Parse(g.GetSection("time").Value.Split(":")[1]),
                 Messages = g.GetSection("messages").GetChildren().Select(m => m.Value.ToString()).ToList()
-            }).ToList();
+            }).Select(x => x as IGetObject).ToList();
         }
 
         public static string ReverseMessageText(Message message)
@@ -73,6 +74,7 @@
                 yield return (string)enumerator.Current;
             }
         }
+
         private static string ReverseGraphemeClusters(this string s)
         {
             return string.Join("", s.GraphemeClusters().Reverse().ToArray());
@@ -99,7 +101,7 @@
             return $"time is: {resultTime:HH:mm:ss}";
         }
 
-        public static string CommandFromMessage(Message message, string botName)
+        public static string? CommandFromMessage(Message message, string botName)
         {
             var split = message.EntityValues.FirstOrDefault().Split("@");
 

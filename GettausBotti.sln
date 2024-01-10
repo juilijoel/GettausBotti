@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34310.174
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GettausBotti", "GettausBotti\GettausBotti.csproj", "{95CC8C85-E516-48EC-8698-08235BBDE5E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GettausBotti", "GettausBotti\GettausBotti.csproj", "{95CC8C85-E516-48EC-8698-08235BBDE5E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GettausBotti.Interfaces", "GettausBotti.Interfaces\GettausBotti.Interfaces.csproj", "{CCEDCB67-451E-402E-8183-0D6D3C71FA19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GettausBotti.Data", "GettausBotti.Data\GettausBotti.Data.csproj", "{1404766B-FE19-4619-9483-840F840F7738}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GettausBotti.Library", "GettausBotti.Library\GettausBotti.Library.csproj", "{E0427506-4F66-4EB0-80F6-971E46D6E2D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{95CC8C85-E516-48EC-8698-08235BBDE5E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95CC8C85-E516-48EC-8698-08235BBDE5E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95CC8C85-E516-48EC-8698-08235BBDE5E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCEDCB67-451E-402E-8183-0D6D3C71FA19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCEDCB67-451E-402E-8183-0D6D3C71FA19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCEDCB67-451E-402E-8183-0D6D3C71FA19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCEDCB67-451E-402E-8183-0D6D3C71FA19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1404766B-FE19-4619-9483-840F840F7738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1404766B-FE19-4619-9483-840F840F7738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1404766B-FE19-4619-9483-840F840F7738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1404766B-FE19-4619-9483-840F840F7738}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0427506-4F66-4EB0-80F6-971E46D6E2D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0427506-4F66-4EB0-80F6-971E46D6E2D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0427506-4F66-4EB0-80F6-971E46D6E2D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0427506-4F66-4EB0-80F6-971E46D6E2D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

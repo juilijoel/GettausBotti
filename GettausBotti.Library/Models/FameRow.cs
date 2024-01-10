@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GettausBotti.DataTypes
+﻿namespace GettausBotti.Library.Models
 {
-    public class FameRow
+    using GettausBotti.Interfaces.Models;
+
+    public class FameRow : IFameRow
     {
         public int Year { get; set; }
         public int Score { get; set; }
         public long UserId { get; set; }
-        public string UserName { get; set; }
+        public string UserName { get; set; } = default!;
 
         public string ToStringRow(int length)
         {

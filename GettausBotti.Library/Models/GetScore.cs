@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GettausBotti.DataTypes
+﻿namespace GettausBotti.Library.Models
 {
-    public class GetScore
+    using GettausBotti.Interfaces.Models;
+
+    public class GetScore : IGetScore
     {
         public long UserId { get; set; }
-        public string UserName { get; set; }
+        public string UserName { get; set; } = default!;
         public int Score { get; set; }
 
         public override string ToString()

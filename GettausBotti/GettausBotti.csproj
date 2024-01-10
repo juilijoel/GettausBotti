@@ -6,14 +6,20 @@
     <UserSecretsId>1d33fea7-7801-4c1a-82ce-0579ed505771</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0-rc.2.23480.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0-rc.2.23480.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.2.23479.6" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
-    <PackageReference Include="Telegram.Bot" Version="19.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Telegram.Bot" Version="20.0.0-alpha.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GettausBotti.Interfaces\GettausBotti.Interfaces.csproj" />
+    <ProjectReference Include="..\GettausBotti.Library\GettausBotti.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings_debug.json">

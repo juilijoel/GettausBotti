@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-
-namespace GettausBotti.DataTypes
+﻿namespace GettausBotti.Library.Models
 {
-    public class GetObject
+    using GettausBotti.Interfaces.Models;
+    using GettausBotti.Library.Extensions;
+
+    public class GetObject : IGetObject
     {
         public int Hour { get; set; }
         public int Minute { get; set; }
+
         private GetObject _penaltyZone;
-    
+
         //Custom response message of the get
         public List<string> Messages { get; set; }
 

@@ -1,24 +1,16 @@
-﻿namespace GettausBotti.DataTypes
+﻿namespace GettausBotti.Library.Services
 {
+    using GettausBotti.Interfaces.Services;
     using System;
-    using System.Collections.Generic;
 
-    public class Penalty
+    public class PenaltyService : IPenaltyService
     {
-        public long UserId { get; set; }
-        public long ChatId { get; set; }
-        public DateTime TimeStamp { get; set; }
-        public TimeSpan Duration { get; set; }
-    }
-
-    public class PenaltyBox
-    {
-        private readonly Dictionary<Tuple<long, long>, Penalty> _penalties;
-
-        public PenaltyBox()
+        public PenaltyService()
         {
             _penalties = [];
         }
+
+        private readonly Dictionary<Tuple<long, long>, Penalty> _penalties;
 
         public TimeSpan AddPenalty(long userId, long chatId, DateTime timeStamp, TimeSpan duration)
         {
@@ -50,13 +42,19 @@
             {
                 var penaltyEndTime = value.TimeStamp.Add(value.Duration);
 
-                if(penaltyEndTime > timeStamp)
-                return penaltyEndTime - timeStamp;
+                if (penaltyEndTime > timeStamp)
+                    return penaltyEndTime - timeStamp;
             }
 
             return TimeSpan.Zero;
         }
+
+        private class Penalty
+        {
+            public long UserId { get; set; }
+            public long ChatId { get; set; }
+            public DateTime TimeStamp { get; set; }
+            public TimeSpan Duration { get; set; }
+        }
     }
-
-
 }
