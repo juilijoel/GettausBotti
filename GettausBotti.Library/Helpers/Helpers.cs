@@ -1,4 +1,4 @@
-﻿namespace GettausBotti.Library.Extensions
+﻿namespace GettausBotti.Library.Helpers
 {
     using GettausBotti.Interfaces.Models;
     using GettausBotti.Library.Models;
@@ -9,7 +9,7 @@
     using System.Linq;
     using Telegram.Bot.Types;
 
-    public static class Extensions
+    public static class Helpers
     {
         public static string ScoresToMessageString(IEnumerable<IGetScore> scores, string header, int lineLength, int? year)
         {

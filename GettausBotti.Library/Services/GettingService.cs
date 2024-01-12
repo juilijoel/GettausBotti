@@ -4,7 +4,7 @@
     using GettausBotti.Data.Entities;
     using GettausBotti.Interfaces.Models;
     using GettausBotti.Interfaces.Services;
-    using GettausBotti.Library.Extensions;
+    using GettausBotti.Library.Helpers;
     using GettausBotti.Library.Models;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
@@ -32,7 +32,7 @@
         public async Task<IGetResponse> TryGetAsync(Message message, CancellationToken cancellationToken)
         {
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(Config["timezone"]);
-            var getTimes = Extensions.GetGetTimes(Config);
+            var getTimes = Helpers.GetGetTimes(Config);
             var failMessages = Config.GetSection("failMessages").GetChildren().Select(m => m.Value.ToString()).ToList();
 
             var messageLocalTime = TimeZoneInfo.ConvertTimeFromUtc(message.Date, timeZoneInfo);

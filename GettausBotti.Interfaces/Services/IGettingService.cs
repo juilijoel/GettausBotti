@@ -1,8 +1,8 @@
-﻿using GettausBotti.Interfaces.Models;
-using Telegram.Bot.Types;
-
-namespace GettausBotti.Interfaces.Services
+﻿namespace GettausBotti.Interfaces.Services
 {
+    using GettausBotti.Interfaces.Models;
+    using Telegram.Bot.Types;
+
     public interface IGettingService
     {
         Task<IGetResponse> TryGetAsync(Message message, CancellationToken cancellationToken);

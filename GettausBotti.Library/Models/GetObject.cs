@@ -1,7 +1,7 @@
 ﻿namespace GettausBotti.Library.Models
 {
     using GettausBotti.Interfaces.Models;
-    using GettausBotti.Library.Extensions;
+    using GettausBotti.Library.Helpers;
 
     public class GetObject : IGetObject
     {
